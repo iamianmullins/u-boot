@@ -119,6 +119,20 @@ config BUILD_BIN2C
 
 comment "Commands"
 
+config CMDLINE_RESTRICT
+	bool "Disable commands that can bypass secure boot"
+	default y if FIT_SIGNATURE
+	help
+	  When enabled, commands that could be used to execute unsigned
+	  code are disabled at compile time. This removes direct code
+	  execution paths (go, bootelf, bootz, booti, zboot, source, pxe)
+	  and environment modification commands (saveenv, editenv,
+	  importenv, askenv) that could be used to boot dangerous code.
+
+	  This is enabled by default when FIT_SIGNATURE is set. Boards
+	  that need specific restricted commands in a secure boot
+	  configuration can disable this option.
+
 menu "Info commands"
 
 config CMD_ACPI
@@ -388,6 +402,7 @@ config BOOTM_ELF
 config CMD_BOOTZ
 	bool "bootz"
 	depends on LMB
+	depends on !CMDLINE_RESTRICT
 	select LIB_BOOTZ
 	select LIB_BOOTM
 	help
@@ -397,6 +412,7 @@ config CMD_BOOTI
 	bool "booti"
 	depends on ARM64 || RISCV || SANDBOX
 	depends on LMB
+	depends on !CMDLINE_RESTRICT
 	default y
 	select LIB_BOOTI
 	select LIB_BOOTM
@@ -551,6 +567,7 @@ config CMD_CEDIT
 config CMD_ELF
 	bool "bootelf"
 	default y
+	depends on !CMDLINE_RESTRICT
 	select LIB_ELF
 	help
 	  Boot an ELF image from memory.
@@ -590,6 +607,7 @@ config CMD_EXTENSION
 config CMD_GO
 	bool "go"
 	default y
+	depends on !CMDLINE_RESTRICT
 	help
 	  Start an application at a given address.
 
@@ -630,6 +648,7 @@ config SYS_XIMG_LEN
 config CMD_SPL
 	bool "spl export - Export boot information for Falcon boot"
 	depends on SPL
+	depends on !CMDLINE_RESTRICT
 	help
 	  Falcon mode allows booting directly from SPL into an Operating
 	  System such as Linux, thus skipping U-Boot proper. See
@@ -681,6 +700,7 @@ config THOR_RESET_OFF
 config CMD_ZBOOT
 	bool "zboot - x86 boot command"
 	depends on ZBOOT
+	depends on !CMDLINE_RESTRICT
 	default y
 	help
 	  With x86 machines it is common to boot a bzImage file which
@@ -698,6 +718,7 @@ menu "Environment commands"
 
 config CMD_ASKENV
 	bool "ask for env variable"
+	depends on !CMDLINE_RESTRICT
 	help
 	  Ask for environment variable
 
@@ -710,12 +731,14 @@ config CMD_EXPORTENV
 config CMD_IMPORTENV
 	bool "env import"
 	default y
+	depends on !CMDLINE_RESTRICT
 	help
 	  Import environments.
 
 config CMD_EDITENV
 	bool "editenv"
 	default y
+	depends on !CMDLINE_RESTRICT
 	help
 	  Edit environment variable.
 
@@ -728,6 +751,7 @@ config CMD_SAVEENV
 	bool "saveenv"
 	depends on !(SRIO_PCIE_BOOT_SLAVE && ENV_IS_IN_REMOTE)
 	default y
+	depends on !CMDLINE_RESTRICT
 	help
 	  Save all environment variables into the compiled-in persistent
 	  storage.
@@ -1928,6 +1952,7 @@ config CMD_ITEST
 config CMD_SOURCE
 	bool "source"
 	default y
+	depends on !CMDLINE_RESTRICT
 	help
 	  Run script from memory
 
@@ -2330,6 +2355,7 @@ config WGET_BUILTIN_CACERT_PATH
 
 config CMD_PXE
 	bool "pxe"
+	depends on !CMDLINE_RESTRICT
 	select PXE_UTILS
 	select CMD_TFTPBOOT
 	help
